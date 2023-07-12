@@ -157,22 +157,25 @@ class FileSpace(StackLayout):
                         bytesformat = imageguy._texture.pixels
                         # print(type(bytesformat), imageguy.width, imageguy.height,imageguy.__dict__, dir(imageguy)) #, imageguy.colorfmt > confirmed rgba for sportsperson
                         image_array = np.frombuffer(bytesformat, np.uint8).copy().reshape(imageguy.width, imageguy.height, 4) #u need to know ur image format. this is assuming rgba/bgra. if u have no alpha channel then it's just rgb/bgr and so pick 3
-                        print("og shape", image_array.shape)
+                        # print("og shape", image_array.shape)
                         #use numpy thresholding: https://www.python-engineer.com/posts/image-thresholding/
                         #to make mask, go grayscale then apply thresholding:
                         # https://stackoverflow.com/questions/51285593/converting-an-image-to-grayscale-using-numpy
-                        img_np = image_array
-                        # img_np = grayConversion(image_array)
+                        # img_np = image_array
+                        img_np = grayConversion(image_array)
+                        img_np = np.stack((img_np,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
+                        print("np shape?", img_np.shape)
+                        return img_np
                         #now to B&W from grayscale:
                         # https://stackoverflow.com/a/18778280
                         #white is background, so anything less than 255 should be set to 0 (black)
-                        bw = img_np.copy()
-                        bw[bw < 255] = 0
-                        #back to dim of 4:
-                        # https://stackoverflow.com/a/40119878
-                        bw = np.stack((bw,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
-                        print("bw shape after", bw.shape)
-                        return bw
+                        # bw = img_np.copy()
+                        # bw[bw < 255] = 0
+                        # #back to dim of 4:
+                        # # https://stackoverflow.com/a/40119878
+                        # bw = np.stack((bw,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
+                        # print("bw shape after", bw.shape)
+                        # return bw
                     
                     def pixelcollider(*args):
                         widget1VAR = args[0]
@@ -250,7 +253,7 @@ class FileSpace(StackLayout):
                     child.texture = newtexture
                     # print("checking collision between:", child.__class__, file.__class__)
                     # print("checking collision between:", dir(child))
-                    # '''
+                    '''
 
                     #THIS BLOCK CONFIRMED THAT IMAGEDATA FLIPS IMAGES VERTICALLY
                     # '''
