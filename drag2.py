@@ -162,7 +162,7 @@ class FileSpace(StackLayout):
                         #to make mask, go grayscale then apply thresholding:
                         # https://stackoverflow.com/questions/51285593/converting-an-image-to-grayscale-using-numpy
                         img_np = image_array
-                        img_np = grayConversion(image_array)
+                        # img_np = grayConversion(image_array)
                         #now to B&W from grayscale:
                         # https://stackoverflow.com/a/18778280
                         #white is background, so anything less than 255 should be set to 0 (black)
