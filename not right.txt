@@ -1,0 +1,104 @@
+
+                    # widgetcol = child.collide_widget(file)
+                    # print("widgetcol?", widgetcol, dir(child), child.__dict__)
+                    # print("widgetcol?", widgetcol, self.files) 
+                    #PLAN: https://discord.com/channels/423249981340778496/423250272316293120/1124640424963870771
+                    #pixel collision is: convert each image to Black and white as per 
+                    # https://stackoverflow.com/a/23655364
+                    # c = a & b and compare c to numpy.zeroes of the same shape
+                    
+                    #check how pygame does it here https://stackoverflow.com/questions/58662215/check-collision-between-a-image-and-a-line
+                    #relevant line: player1.mask.overlap
+                    #pygame checks the whole image....
+                    
+                    #what is the image?
+                    # print(type(child.export_as_image())) # > <class 'kivy.core.image.Image'>
+
+                    #REMINDER:  #0 is black, 255 is white, background is white: 255
+                    # https://stackoverflow.com/questions/21459758/numpy-faster-way-to-implement-threshold-value-ceiling <--- use this b/c image is not grayscale
+                    # image_as_whitebg = np.where(img_np > threshold, 255, 0)
+
+                    def grayConversion(image):
+                        ## https://stackoverflow.com/questions/51285593/converting-an-image-to-grayscale-using-numpy
+                        grayValue = 0.07 * image[:,:,2] + 0.72 * image[:,:,1] + 0.21 * image[:,:,0]
+                        gray_img = grayValue.astype(np.uint8)
+                        return gray_img
+
+                    def widgettomask(*args):
+                        widgetVAR = args[0]
+                        imageguy = widgetVAR.export_as_image()
+                        bytesformat = imageguy._texture.pixels
+                        # print(type(bytesformat), imageguy.width, imageguy.height,imageguy.__dict__, dir(imageguy)) #, imageguy.colorfmt > confirmed rgba for sportsperson
+                        image_array = np.frombuffer(bytesformat, np.uint8).copy().reshape(imageguy.width, imageguy.height, 4) #u need to know ur image format. this is assuming rgba/bgra. if u have no alpha channel then it's just rgb/bgr and so pick 3
+                        #use numpy thresholding: https://www.python-engineer.com/posts/image-thresholding/
+                        #to make mask, go grayscale then apply thresholding:
+                        # https://stackoverflow.com/questions/51285593/converting-an-image-to-grayscale-using-numpy
+                        img_np = image_array
+                        # img_np = grayConversion(image_array)
+                        #now to B&W from grayscale:
+                        # https://stackoverflow.com/a/18778280
+                        #white is background, so anything less than 255 should be set to 0 (black)
+                        bw = img_np.copy()
+                        bw[bw < 255] = 0
+                        return bw
+                    def pixelcollider(*args):
+                        widget1VAR = args[0]
+                        widget2VAR = args[1]
+                        widget1VARmask = widgettomask(widget1VAR)
+                        widget2VARmask = widgettomask(widget2VAR)
+                        # https://discord.com/channels/423249981340778496/423250272316293120/1128662633726345276
+                        # Perform image subtraction:
+                        subtraction_array = np.abs(array1 - array2)
+
+                        # Check for non-zero pixels:
+                        intersection_pixels = np.count_nonzero(subtraction_array)
+
+                        # Determine if there is an intersection:
+                        if intersection_pixels > 0:
+                            print("There is an intersection between the images.")
+                        else:
+                            print("There is no intersection between the images.")
+                    
+
+                    # print("collision?", pixelcollider(child, file))
+                    #let's see if it works by updating texture
+                    
+                    #colorformats for kivy: https://github.com/kivy/kivy/blob/8e160fb08402f0a0dd04955638eb46858611cf6a/kivy/graphics/texture.pyx#L870C74-L871C50
+                    # Image format, can be one of 'rgb', 'rgba', 'bgr', 'bgra', 'luminance' or 'luminance_alpha'.
+                    # maskimage_whitebg = widgettomask(child)
+                    imageguy = child.export_as_image()
+                    bytesformat = imageguy._texture.pixels
+                    # https://stackoverflow.com/a/40119878
+                    # https://stackoverflow.com/a/51660676
+                    # https://stackoverflow.com/a/40119878
+                    
+                    # maskimage_whitergba = np.stack((maskimage_whitebg,)*4, axis=-1)
+                    maskimage_whitebg = np.frombuffer(bytesformat, np.uint8).copy().reshape(imageguy.width, imageguy.height, 4) 
+                    
+                    # maskimage_whitergba = np.full((maskimage_whitebg.shape[0],maskimage_whitebg.shape[1], 3), (255,255,255), dtype = np.uint8) #0 is black, 255 is white??
+                    print("sh", maskimage_whitebg.shape, time.time())
+                    # maskimage_whitergba = maskimage_whitebg*np.ones((maskimage_whitebg.shape[0],maskimage_whitebg.shape[1],3))
+                    # print("sh", maskimage_whitebg.shape, maskimage_whitergba.shape)
+                    # child.texture.blit_buffer(maskimage_whitergba.astype(np.uint8).tobytes(), colorfmt="rgb", bufferfmt='ubyte')
+
+
+                    newtexture = Texture.create(size=(maskimage_whitebg.shape[0],maskimage_whitebg.shape[1]), colorfmt='rgba') #.astype(np.uint8)
+                    newtexture.blit_buffer(maskimage_whitebg.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                    child.texture = newtexture
+                    # newtexture = Texture.create(size=(maskimage_whitergba.shape[1],maskimage_whitergba.shape[0]), colorfmt='rgb') 
+                    # newtexture.blit_buffer(maskimage_whitergba.astype(np.uint8).tobytes(), colorfmt="rgb", bufferfmt='ubyte')
+                    # child.texture = newtexture
+                    
+
+                    # imageguy = child.export_as_image()
+                    # # print(type(imageguy), dir(imageguy), imageguy.__dict__) 
+                    # # print(type(imageguy._texture.pixels)) #pixels as per  https://github.com/kivy/kivy/blob/8e160fb08402f0a0dd04955638eb46858611cf6a/kivy/graphics/texture.pyx#L1306C15-L1306C15
+                    # bytesformat = imageguy._texture.pixels
+                    # print(type(bytesformat)) 
+                    # #reminder: these pixels are in bytes, you need to convert them to a numpy array to do stuff
+                    # image_array = np.frombuffer(bytesformat, np.uint8).copy().reshape(imageguy.height, imageguy.width, 4) #here u need to guess colorfmt, 3 is rgb/bgr, 4 is rgba/bgra. ref: https://github.com/kivy/kivy/blob/8e160fb08402f0a0dd04955638eb46858611cf6a/kivy/graphics/texture.pyx#L1234C9-L1234C17
+                    # # print(image_array)
+
+                
+                    # print("OVERLAP!")
+                    # self.rect1.collide_widget(self.rect2)
