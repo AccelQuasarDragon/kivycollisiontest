@@ -48,11 +48,11 @@ FileSpace:
     FileBox:
         id: frigate
         # source: "sportspersonMASK.jpg"
-        source: "ranxfrigate.jpg"
+        source: "ranxfrigateinverse.jpg"
         opacity: 0.99
     FileBox:
         id: bomber
-        source: "ranxbomber.jpg"
+        source: "ranxbomberinverse.jpg"
         opacity: 0.99
     FileBox:
         id: collisionspace
@@ -197,7 +197,7 @@ class FileSpace(StackLayout):
                         bw[bw >= 128] = 255 # White
                         #back to dim of 4:
                         # https://stackoverflow.com/a/40119878
-                        bw = np.stack((bw,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
+                        # bw = np.stack((bw,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
                         # print("bw shape after", bw.shape, bw)
                         return bw
                     
@@ -221,10 +221,10 @@ class FileSpace(StackLayout):
                         maxy = int(max(widget1VAR.pos[1] + widget1VAR.height, widget2VAR.pos[1]+ widget2VAR.height))
 
                         print("maxx",maxx-minx)
-                        testarea1 = np.full((maxx-minx,maxy-miny), 0) #black image
+                        #I kinda mixed up x y kinda not, it's because numpy and kivy have different orientations. numpy is an array: top>down, L>R. kivy is down>up, L>R.... smth like that 
                         testarea1 = np.full((maxy-miny,maxx-minx), 0) #black image
                         
-                        testarea2 = np.full((maxx-minx,maxy-miny), 0) #black image
+                        testarea2 = np.full((maxy-miny,maxx-minx), 0) #black image
                         # testarea2 = np.full((maxx-minx,maxy-miny), 0) #black image
                         print("testareashape", testarea1.shape, widget1VARmask.shape)
 
@@ -232,7 +232,8 @@ class FileSpace(StackLayout):
                         #place widget 1 respecting the offsets
                         widget1xoffset = int(widget1VAR.pos[0]- minx)
                         widget1yoffset = int(widget1VAR.pos[1]- miny)
-                        # testarea1[widget1xoffset:widget1xoffset+widget1VAR.width,widget1yoffset:widget1yoffset+widget1VAR.height] = widget1VARmask
+                        #reminder y and x are reversed
+                        testarea1[widget1yoffset:widget1yoffset+widget1VAR.height,widget1xoffset:widget1xoffset+widget1VAR.width] = widget1VARmask
                         print("offsets and dim", 
                               testarea1.shape,
                               widget1VARmask.shape, 
@@ -248,17 +249,65 @@ class FileSpace(StackLayout):
 
                         #now to update testarea2 with respect to the widget location:
                         #place widget 2 respecting the offsets
-                        widget2xoffset = int(widget2VAR.pos[0]- minx)
+                        widget2xoffset = int(widget2VAR.pos[0]-minx)
                         widget2yoffset = int(widget2VAR.pos[1]-miny)
-                        # testarea2[widget2xoffset:widget2xoffset+widget2VAR.width,widget2yoffset:widget2yoffset+widget2VAR.height] = widget2VARmask
+                        print("offsets and dim2", 
+                              testarea2.shape, 
+                              widget2VARmask.shape,
+                              widget2VAR.pos, 
+                              minx, miny,
+                              widget2xoffset,
+                              widget2xoffset,
+                              widget2xoffset,
+                              widget2yoffset,
+                              widget2xoffset+widget2VAR.width,
+                              widget2yoffset+widget2VAR.height
+                              )
+                        #reminder y and x are reversed
+                        testarea2[widget2yoffset:widget2yoffset+widget2VAR.height,widget2xoffset:widget2xoffset+widget2VAR.width] = widget2VARmask
 
-                        #show testarea1 and testarea2:
-                        # finaltest = np.add(testarea1, testarea2)
-                        #back to dim of 4:
-                        # https://stackoverflow.com/a/40119878
-                        # finaltest = np.stack((finaltest,)*4, axis=-1).astype(np.uint8) #just needed to get to rgba format to look at mask in kivy
+                        # #show testarea1 and testarea2:
+                        # finaltest = np.add(testarea1, testarea2) #add is if black is the bg
+                        finaltest = np.subtract(testarea1, testarea2) 
+                        #clip to stop negative numbers:
+                        # https://stackoverflow.com/a/21460603
+                        finaltest = np.clip(finaltest, 0, 255, out=finaltest)
 
+                        #just needed to get to rgba format to look at mask in kivy
+                        # #back to dim of 4:
+                        # # https://stackoverflow.com/a/40119878
+                        finaltest = np.stack((finaltest,)*4, axis=-1).astype(np.uint8) 
+                        # finaltest
+                        #blit to collisionspace:
+                        newtexture = Texture.create(size=(finaltest.shape[1],finaltest.shape[0]), colorfmt='rgba') 
+                        newtexture.blit_buffer(finaltest.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                        # print("root", self.ids, self.ids["collisionspace"])
+                        self.ids["collisionspace"].texture = newtexture
+
+                        # testarea2
+                        # #blit to collisionspace:
+                        # testarea2 = np.stack((testarea2,)*4, axis=-1).astype(np.uint8) 
+                        # newtexture = Texture.create(size=(testarea2.shape[1],testarea2.shape[0]), colorfmt='rgba') 
+                        # newtexture.blit_buffer(testarea2.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                        # # print("root", self.ids, self.ids["collisionspace"])
+                        # self.ids["collisionspace"].texture = newtexture
+
+                        # testara1
+                        # #blit to collisionspace:
+                        # testarea1 = np.stack((testarea1,)*4, axis=-1).astype(np.uint8) 
+                        # newtexture = Texture.create(size=(testarea1.shape[1],testarea1.shape[0]), colorfmt='rgba') 
+                        # newtexture.blit_buffer(testarea1.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                        # # print("root", self.ids, self.ids["collisionspace"])
+                        # self.ids["collisionspace"].texture = newtexture
                         
+                        # widget2 mask works #confirmed after turning on bw = np.stack((bw,)*4, axis=-1)
+                        # #blit to collisionspace:
+                        # newtexture = Texture.create(size=(widget2VARmask.shape[1],widget2VARmask.shape[0]), colorfmt='rgba') 
+                        # newtexture.blit_buffer(widget2VARmask.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                        # # print("root", self.ids, self.ids["collisionspace"])
+                        # self.ids["collisionspace"].texture = newtexture
+
+                        # # widget1 mask works #confirmed after turning on bw = np.stack((bw,)*4, axis=-1)
                         # #blit to collisionspace:
                         # # widget1VARmask = np.stack((widget1VARmask,)*4, axis=-1).astype(np.uint8) 
                         # newtexture = Texture.create(size=(widget1VARmask.shape[1],widget1VARmask.shape[0]), colorfmt='rgba') 
@@ -266,12 +315,13 @@ class FileSpace(StackLayout):
                         # # print("root", self.ids, self.ids["collisionspace"])
                         # self.ids["collisionspace"].texture = newtexture
 
-                        #blit to collisionspace:
-                        testarea1 = np.stack((testarea1,)*4, axis=-1).astype(np.uint8) 
-                        newtexture = Texture.create(size=(testarea1.shape[1],testarea1.shape[0]), colorfmt='rgba') 
-                        newtexture.blit_buffer(testarea1.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
-                        # print("root", self.ids, self.ids["collisionspace"])
-                        self.ids["collisionspace"].texture = newtexture
+                        #testarea1 works
+                        # #blit to collisionspace:
+                        # testarea1 = np.stack((testarea1,)*4, axis=-1).astype(np.uint8) 
+                        # newtexture = Texture.create(size=(testarea1.shape[1],testarea1.shape[0]), colorfmt='rgba') 
+                        # newtexture.blit_buffer(testarea1.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                        # # print("root", self.ids, self.ids["collisionspace"])
+                        # self.ids["collisionspace"].texture = newtexture
                         
                         
                         # #show testarea1 and testarea2:
@@ -282,8 +332,8 @@ class FileSpace(StackLayout):
                         # # finaltest = np.stack((widget1VARmask,)*4, axis=-1).astype(np.uint8) #just needed to get to rgba format to look at mask in kivy
                         # # finaltest = np.full((200,200,3), [255,255,255], dtype=np.uint8) 
                         # #blit to collisionspace:
-                        # newtexture = Texture.create(size=(finaltest.shape[1],finaltest.shape[0]), colorfmt='rgb') 
-                        # newtexture.blit_buffer(finaltest.tobytes(), colorfmt="rgb", bufferfmt='ubyte')
+                        # newtexture = Texture.create(size=(finaltest.shape[1],finaltest.shape[0]), colorfmt='rgba') 
+                        # newtexture.blit_buffer(finaltest.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
                         # # print("root", self.ids, self.ids["collisionspace"])
                         # self.ids["collisionspace"].texture = newtexture
 
