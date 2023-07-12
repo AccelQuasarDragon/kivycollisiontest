@@ -59,12 +59,27 @@ FileSpace:
         size: 200, 200
         source: "sportspersonMASK.jpg"
 """
+from kivy.clock import Clock
 
 # class FileBox(DragBehavior, BoxLayout):
 class FileBox(DragBehavior, Image):
 
     def __init__(self,**kwargs):
         super(FileBox, self).__init__(**kwargs)
+        #save the original image so repeated grayconversion doesn't nuke the image out of existence when i observe it
+        Clock.schedule_once(self.originalsave, 2) #0 is too fast, 1 is too fast, 2 works (widget needs to be init before saving an image): https://stackoverflow.com/a/62435605
+    def originalsave(self, *args):
+        # # print("og self?", dir(self), self.__dict__)
+        # try:
+        #     # self.originalguy = self.export_as_image()
+        #     # self.originalguy = np.full((200,200,3), [255,255,255], dtype=np.uint8) 
+        # except Exception as e:
+        #     print("blitting died!", e, flush=True)
+        #     import traceback
+        #     print("full exception", "".join(traceback.format_exception(*sys.exc_info())))
+        self.originalguy = self.export_as_image()
+        self.originalbuf = self.export_as_image()._texture.pixels
+
 
 class FileSpace(StackLayout):
     def __init__(self,**kwargs):
@@ -153,31 +168,41 @@ class FileSpace(StackLayout):
 
                     def widgettomask(*args):
                         widgetVAR = args[0]
-                        imageguy = widgetVAR.export_as_image()
+                        #can't do this as repeated grayconversion nukes the image
+                        imageguy = widgetVAR.originalguy
                         bytesformat = imageguy._texture.pixels
+                        # imageguy = widgetVAR.export_as_image()
+                        # bytesformat = imageguy._texture.pixels
                         # print(type(bytesformat), imageguy.width, imageguy.height,imageguy.__dict__, dir(imageguy)) #, imageguy.colorfmt > confirmed rgba for sportsperson
                         image_array = np.frombuffer(bytesformat, np.uint8).copy().reshape(imageguy.width, imageguy.height, 4) #u need to know ur image format. this is assuming rgba/bgra. if u have no alpha channel then it's just rgb/bgr and so pick 3
                         # print("og shape", image_array.shape)
+                        #FOR SOME REASON IMAGEDATA FLIPS VERTICAL TRUE
+                        image_array = np.flip(image_array, 0)
                         #use numpy thresholding: https://www.python-engineer.com/posts/image-thresholding/
                         #to make mask, go grayscale then apply thresholding:
                         # https://stackoverflow.com/questions/51285593/converting-an-image-to-grayscale-using-numpy
                         # img_np = image_array
                         img_np = grayConversion(image_array)
-                        img_np = np.stack((img_np,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
-                        print("np shape?", img_np.shape)
-                        return img_np
-                        #now to B&W from grayscale:
+                        
+                        # img_np = np.stack((img_np,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
+                        # print("np shape?", img_np.shape)
+                        # return img_np
+
+                        # now to B&W from grayscale:
                         # https://stackoverflow.com/a/18778280
-                        #white is background, so anything less than 255 should be set to 0 (black)
-                        # bw = img_np.copy()
-                        # bw[bw < 255] = 0
-                        # #back to dim of 4:
-                        # # https://stackoverflow.com/a/40119878
-                        # bw = np.stack((bw,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
-                        # print("bw shape after", bw.shape)
-                        # return bw
+                        # white is background, so anything less than 255 should be set to 0 (black)
+                        bw = img_np.copy()
+                        # print("bw og", bw)
+                        bw[bw < 128] = 0    # Black
+                        bw[bw >= 128] = 255 # White
+                        #back to dim of 4:
+                        # https://stackoverflow.com/a/40119878
+                        bw = np.stack((bw,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
+                        # print("bw shape after", bw.shape, bw)
+                        return bw
                     
                     def pixelcollider(*args):
+                        print("argssss",args)
                         widget1VAR = args[0]
                         widget2VAR = args[1]
                         widget1VARmask = widgettomask(widget1VAR)
@@ -197,33 +222,70 @@ class FileSpace(StackLayout):
 
                         print("maxx",maxx-minx)
                         testarea1 = np.full((maxx-minx,maxy-miny), 0) #black image
+                        testarea1 = np.full((maxy-miny,maxx-minx), 0) #black image
+                        
                         testarea2 = np.full((maxx-minx,maxy-miny), 0) #black image
+                        # testarea2 = np.full((maxx-minx,maxy-miny), 0) #black image
+                        print("testareashape", testarea1.shape, widget1VARmask.shape)
 
                         #now to update testarea1 with respect to the widget location:
                         #place widget 1 respecting the offsets
                         widget1xoffset = int(widget1VAR.pos[0]- minx)
                         widget1yoffset = int(widget1VAR.pos[1]- miny)
-                        testarea1[widget1xoffset:widget1xoffset+widget1VAR.width,widget1yoffset:widget1yoffset+widget1VAR.height] = widget1VARmask
+                        # testarea1[widget1xoffset:widget1xoffset+widget1VAR.width,widget1yoffset:widget1yoffset+widget1VAR.height] = widget1VARmask
+                        print("offsets and dim", 
+                              testarea1.shape,
+                              widget1VARmask.shape, 
+
+                              widget1VAR.pos, 
+                              minx, miny,
+                              widget1xoffset, 
+                              widget1yoffset, 
+                              widget1xoffset,
+                              widget1xoffset+widget1VAR.width,
+                              widget1yoffset,
+                              widget1yoffset+widget1VAR.height)
 
                         #now to update testarea2 with respect to the widget location:
                         #place widget 2 respecting the offsets
                         widget2xoffset = int(widget2VAR.pos[0]- minx)
                         widget2yoffset = int(widget2VAR.pos[1]-miny)
-                        testarea2[widget2xoffset:widget2xoffset+widget2VAR.width,widget2yoffset:widget2yoffset+widget2VAR.height] = widget2VARmask
+                        # testarea2[widget2xoffset:widget2xoffset+widget2VAR.width,widget2yoffset:widget2yoffset+widget2VAR.height] = widget2VARmask
 
                         #show testarea1 and testarea2:
-                        finaltest = np.add(testarea1, testarea2)
+                        # finaltest = np.add(testarea1, testarea2)
                         #back to dim of 4:
                         # https://stackoverflow.com/a/40119878
                         # finaltest = np.stack((finaltest,)*4, axis=-1).astype(np.uint8) #just needed to get to rgba format to look at mask in kivy
-                        finaltest = np.stack((widget1VARmask,)*4, axis=-1).astype(np.uint8) #just needed to get to rgba format to look at mask in kivy
-                        # finaltest = np.full((200,200,3), [255,255,255], dtype=np.uint8) 
-                        #blit to collisionspace:
-                        newtexture = Texture.create(size=(finaltest.shape[1],finaltest.shape[0]), colorfmt='rgb') 
+
                         
-                        newtexture.blit_buffer(finaltest.tobytes(), colorfmt="rgb", bufferfmt='ubyte')
+                        # #blit to collisionspace:
+                        # # widget1VARmask = np.stack((widget1VARmask,)*4, axis=-1).astype(np.uint8) 
+                        # newtexture = Texture.create(size=(widget1VARmask.shape[1],widget1VARmask.shape[0]), colorfmt='rgba') 
+                        # newtexture.blit_buffer(widget1VARmask.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                        # # print("root", self.ids, self.ids["collisionspace"])
+                        # self.ids["collisionspace"].texture = newtexture
+
+                        #blit to collisionspace:
+                        testarea1 = np.stack((testarea1,)*4, axis=-1).astype(np.uint8) 
+                        newtexture = Texture.create(size=(testarea1.shape[1],testarea1.shape[0]), colorfmt='rgba') 
+                        newtexture.blit_buffer(testarea1.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
                         # print("root", self.ids, self.ids["collisionspace"])
                         self.ids["collisionspace"].texture = newtexture
+                        
+                        
+                        # #show testarea1 and testarea2:
+                        # finaltest = np.add(testarea1, testarea2)
+                        # #back to dim of 4:
+                        # # https://stackoverflow.com/a/40119878
+                        # finaltest = np.stack((finaltest,)*4, axis=-1).astype(np.uint8) #just needed to get to rgba format to look at mask in kivy
+                        # # finaltest = np.stack((widget1VARmask,)*4, axis=-1).astype(np.uint8) #just needed to get to rgba format to look at mask in kivy
+                        # # finaltest = np.full((200,200,3), [255,255,255], dtype=np.uint8) 
+                        # #blit to collisionspace:
+                        # newtexture = Texture.create(size=(finaltest.shape[1],finaltest.shape[0]), colorfmt='rgb') 
+                        # newtexture.blit_buffer(finaltest.tobytes(), colorfmt="rgb", bufferfmt='ubyte')
+                        # # print("root", self.ids, self.ids["collisionspace"])
+                        # self.ids["collisionspace"].texture = newtexture
 
 
                         #check for collision as such:
@@ -233,24 +295,24 @@ class FileSpace(StackLayout):
                         else:
                             return False
                         #  np.count_nonzero(subtraction_array)
-                    # print(child.pos, file.pos)
+                    print(child.pos, file.pos)
 
-                    # if pixelcollider(child, file):
-                    #     print("collision!")
-                    # else:
-                    #     print("no collision")
+                    if pixelcollider(child, file):
+                        print("collision!")
+                    else:
+                        print("no collision")
 
                     #THIS BLOCK CONFIRMS THAT THE MASK WORKS
                     # '''
-                    maskimage_whitebg = widgettomask(child) 
-                    # print("???", maskimage_whitebg.shape)
-                    #FOR SOME REASON IMAGEDATA FLIPS VERTICAL TRUE
-                    maskimage_whitebg = np.flip(maskimage_whitebg, 0)
+                    # maskimage_whitebg = widgettomask(child) 
+                    # # print("???", maskimage_whitebg.shape)
+                    # #FOR SOME REASON IMAGEDATA FLIPS VERTICAL TRUE
+                    # # maskimage_whitebg = np.flip(maskimage_whitebg, 0)
                       
-                    newtexture = Texture.create(size=(maskimage_whitebg.shape[1],maskimage_whitebg.shape[0]), colorfmt='rgba') 
+                    # newtexture = Texture.create(size=(maskimage_whitebg.shape[1],maskimage_whitebg.shape[0]), colorfmt='rgba') 
                     
-                    newtexture.blit_buffer(maskimage_whitebg.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
-                    child.texture = newtexture
+                    # newtexture.blit_buffer(maskimage_whitebg.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                    # child.texture = newtexture
                     # print("checking collision between:", child.__class__, file.__class__)
                     # print("checking collision between:", dir(child))
                     '''
