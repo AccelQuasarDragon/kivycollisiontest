@@ -43,17 +43,18 @@ FileSpace:
     FileBox:
         id: sportsball
         # source: "sportspersonMASK.jpg"
-        opacity: 0.99
-        source: "sportspersonMASK.jpg"
+        opacity: 0.8
+        source: "sportspersonMASK2.jpg"
     FileBox:
         id: frigate
-        # source: "sportspersonMASK.jpg"
-        source: "ranxfrigateinverse.jpg"
-        opacity: 0.99
+        source: "ranxfrigate.jpg"
+        # source: "ranxfrigateinverse.jpg"
+        opacity: 0.8
     FileBox:
         id: bomber
-        source: "ranxbomberinverse.jpg"
-        opacity: 0.99
+        source: "ranxbomber.jpg"
+        # source: "ranxbomberinverse.jpg"
+        opacity: 0.8
     FileBox:
         id: collisionspace
         size: 200, 200
@@ -202,7 +203,7 @@ class FileSpace(StackLayout):
                         return bw
                     
                     def pixelcollider(*args):
-                        print("argssss",args)
+                        # print("argssss",args)
                         widget1VAR = args[0]
                         widget2VAR = args[1]
                         widget1VARmask = widgettomask(widget1VAR)
@@ -220,13 +221,13 @@ class FileSpace(StackLayout):
                         miny = int(min(widget1VAR.pos[1], widget2VAR.pos[1]))
                         maxy = int(max(widget1VAR.pos[1] + widget1VAR.height, widget2VAR.pos[1]+ widget2VAR.height))
 
-                        print("maxx",maxx-minx)
+                        # print("maxx",maxx-minx)
                         #I kinda mixed up x y kinda not, it's because numpy and kivy have different orientations. numpy is an array: top>down, L>R. kivy is down>up, L>R.... smth like that 
                         testarea1 = np.full((maxy-miny,maxx-minx), 0) #black image
                         
                         testarea2 = np.full((maxy-miny,maxx-minx), 0) #black image
                         # testarea2 = np.full((maxx-minx,maxy-miny), 0) #black image
-                        print("testareashape", testarea1.shape, widget1VARmask.shape)
+                        # print("testareashape", testarea1.shape, widget1VARmask.shape)
 
                         #now to update testarea1 with respect to the widget location:
                         #place widget 1 respecting the offsets
@@ -234,45 +235,51 @@ class FileSpace(StackLayout):
                         widget1yoffset = int(widget1VAR.pos[1]- miny)
                         #reminder y and x are reversed
                         testarea1[widget1yoffset:widget1yoffset+widget1VAR.height,widget1xoffset:widget1xoffset+widget1VAR.width] = widget1VARmask
-                        print("offsets and dim", 
-                              testarea1.shape,
-                              widget1VARmask.shape, 
+                        # print("offsets and dim", 
+                        #       testarea1.shape,
+                        #       widget1VARmask.shape, 
 
-                              widget1VAR.pos, 
-                              minx, miny,
-                              widget1xoffset, 
-                              widget1yoffset, 
-                              widget1xoffset,
-                              widget1xoffset+widget1VAR.width,
-                              widget1yoffset,
-                              widget1yoffset+widget1VAR.height)
+                        #       widget1VAR.pos, 
+                        #       minx, miny,
+                        #       widget1xoffset, 
+                        #       widget1yoffset, 
+                        #       widget1xoffset,
+                        #       widget1xoffset+widget1VAR.width,
+                        #       widget1yoffset,
+                        #       widget1yoffset+widget1VAR.height)
 
                         #now to update testarea2 with respect to the widget location:
                         #place widget 2 respecting the offsets
                         widget2xoffset = int(widget2VAR.pos[0]-minx)
                         widget2yoffset = int(widget2VAR.pos[1]-miny)
-                        print("offsets and dim2", 
-                              testarea2.shape, 
-                              widget2VARmask.shape,
-                              widget2VAR.pos, 
-                              minx, miny,
-                              widget2xoffset,
-                              widget2xoffset,
-                              widget2xoffset,
-                              widget2yoffset,
-                              widget2xoffset+widget2VAR.width,
-                              widget2yoffset+widget2VAR.height
-                              )
+                        # print("offsets and dim2", 
+                        #       testarea2.shape, 
+                        #       widget2VARmask.shape,
+                        #       widget2VAR.pos, 
+                        #       minx, miny,
+                        #       widget2xoffset,
+                        #       widget2xoffset,
+                        #       widget2xoffset,
+                        #       widget2yoffset,
+                        #       widget2xoffset+widget2VAR.width,
+                        #       widget2yoffset+widget2VAR.height
+                        #       )
                         #reminder y and x are reversed
                         testarea2[widget2yoffset:widget2yoffset+widget2VAR.height,widget2xoffset:widget2xoffset+widget2VAR.width] = widget2VARmask
 
                         # #show testarea1 and testarea2:
                         # finaltest = np.add(testarea1, testarea2) #add is if black is the bg
-                        finaltest = np.subtract(testarea1, testarea2) 
+
+                        # finaltest = np.subtract(testarea1, testarea2) 
                         #clip to stop negative numbers:
                         # https://stackoverflow.com/a/21460603
-                        finaltest = np.clip(finaltest, 0, 255, out=finaltest)
+                        # finaltest = np.clip(finaltest, 0, 255, out=finaltest)
 
+                        # finaltest as per: https://stackoverflow.com/a/23655364 
+                        finaltest = testarea1 & testarea2
+                        finalverdict = np.count_nonzero(finaltest)
+                        # print("finalverdict", finalverdict)
+                        
                         #just needed to get to rgba format to look at mask in kivy
                         # #back to dim of 4:
                         # # https://stackoverflow.com/a/40119878
@@ -339,13 +346,13 @@ class FileSpace(StackLayout):
 
 
                         #check for collision as such:
-                        collision = np.array_equal(testarea1, testarea2)
-                        if collision: 
+                        # collision = np.array_equal(testarea1, testarea2)
+                        if finalverdict: 
                             return True
                         else:
                             return False
                         #  np.count_nonzero(subtraction_array)
-                    print(child.pos, file.pos)
+                    # print(child.pos, file.pos)
 
                     if pixelcollider(child, file):
                         print("collision!")
