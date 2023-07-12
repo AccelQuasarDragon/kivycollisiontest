@@ -1,7 +1,6 @@
 The important thing
-![]([my_video.mov](https://github.com/AccelQuasarDragon/kivycollisiontest/assets/138998466/c58d794b-317e-4120-9c78-d9603de44060))
 
-
+https://github.com/AccelQuasarDragon/kivycollisiontest/assets/138998466/c58d794b-317e-4120-9c78-d9603de44060
 
 TO RUN:
 
