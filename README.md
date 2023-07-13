@@ -15,4 +15,5 @@ with pip:
 I did `poetry export --without-hashes --format=requirements.txt > requirements.txt` so u should be able to pip install from requirements.txt
 
 TODO:
-    test it out on a non-mask image,grayConversion is on so it should work on any kivy widget...
+    test it out on a non-mask image,grayConversion is on so it should work on any kivy widget... > WORKS
+    bugs: it's just messed up, only works between the first and 2nd widget
