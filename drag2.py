@@ -1,3 +1,4 @@
+# https://stackoverflow.com/questions/58800955/kivy-dragbehavior-dragging-more-than-one-widget
 from kivy.config import Config
 
 Config.set('graphics', 'multisamples', '0')
