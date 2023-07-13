@@ -44,7 +44,7 @@ FileSpace:
         id: sportsball
         # source: "sportspersonMASK.jpg"
         opacity: 0.8
-        source: "sportspersonMASK2.jpg"
+        # source: "sportspersonMASK2.jpg"
     FileBox:
         id: frigate
         source: "ranxfrigate.jpg"
@@ -52,7 +52,8 @@ FileSpace:
         opacity: 0.8
     FileBox:
         id: bomber
-        source: "ranxbomber.jpg"
+        source: "sportspersonMASK3.jpg"
+        # source: "ranxbomber.jpg"
         # source: "ranxbomberinverse.jpg"
         opacity: 0.8
     FileBox:
