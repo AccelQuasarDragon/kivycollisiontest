@@ -18,7 +18,9 @@ TODO:
     test it out on a non-mask image,grayConversion is on so it should work on any kivy widget... > WORKS
     bugs: it's just messed up, only works between the first and 2nd widget
 
-explanation:
+#explanation:
+
+
 to get the image from the testwidget you have helper functions:  
 
 grayconversion > converts a numpy array to a gray image of dimension: (width, height) 
