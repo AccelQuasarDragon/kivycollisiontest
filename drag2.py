@@ -42,20 +42,16 @@ kv = """
 FileSpace:
     #need to add alpha channel to images btw
     FileBox:
-        id: sportsball
-        # source: "sportspersonMASK.jpg"
+        id: sportsball"
         opacity: 0.8
         source: "sportspersonMASK3.jpg"
     FileBox:
         id: frigate
-        source: "ranxfrigate.jpg"
-        # source: "ranxfrigateinverse.jpg"
+        source: "frigate.jpg"
         opacity: 0.8
     FileBox:
         id: bomber
         source: "sportspersonMASK2.jpg"
-        # source: "ranxbomber.jpg"
-        # source: "ranxbomberinverse.jpg"
         opacity: 0.8
     FileBox:
         id: collisionspace
