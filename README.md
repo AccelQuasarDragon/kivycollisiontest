@@ -1,4 +1,4 @@
-The important thing
+# The important thing
 
 https://github.com/AccelQuasarDragon/kivycollisiontest/assets/138998466/c58d794b-317e-4120-9c78-d9603de44060
 
@@ -18,7 +18,7 @@ TODO:
     test it out on a non-mask image,grayConversion is on so it should work on any kivy widget... > WORKS
     bugs: it's just messed up, only works between the first and 2nd widget
 
-#explanation:
+# explanation:
 
 
 to get the image from the testwidget you have helper functions:  
@@ -47,8 +47,7 @@ after that u create the texture with texture.create, blit buffer with bytes (.to
 next is then `self.ids["collisionspace"].texture = newtexture` which updates the texture, you can improve this by doing reloadobserver as per: https://kivy.org/doc/stable/api-kivy.graphics.texture.html#reloading-the-texture
 
 
-RE: 
-shapechange.py and fulltrans.py
+# RE: shapechange.py and fulltrans.py
 
 I spent ~1 hr checking it out, no joke it is possible to emulate the JS/chromium effect, but it will take a while. I would also advise just taking the dive and learning JS. I could do it but it would take like 3 months, no joke. 
 relevant links:
