@@ -45,3 +45,39 @@ ALSO, it's Y before X because of orientation, numpy are arrays, up>down, L>R, bu
 after that u create the texture with texture.create, blit buffer with bytes (.tobytes creates a bytes image, and blitbuffer takes numpy arrays of the correct format, in this case it's (height, width, 4) (4 for RGBA, u can see it by printing any numpy array's shape, array.shape, I also like looking at the actual array by printing it just to double check, it's how I RE-figured out the orientation issue))
 
 next is then `self.ids["collisionspace"].texture = newtexture` which updates the texture, you can improve this by doing reloadobserver as per: https://kivy.org/doc/stable/api-kivy.graphics.texture.html#reloading-the-texture
+
+
+RE: 
+shapechange.py and fulltrans.py
+
+I spent ~1 hr checking it out, no joke it is possible to emulate the JS/chromium effect, but it will take a while. I would also advise just taking the dive and learning JS. I could do it but it would take like 3 months, no joke. 
+relevant links:
+https://stackoverflow.com/questions/31458331/running-multiple-kivy-apps-at-same-time-that-communicate-with-each-other
+https://stackoverflow.com/questions/39359950/how-do-i-have-multiple-windows-in-kivy
+PLAN:
+ur main python file is going to have several kivy windows spawned with multiprocessing, each cropped out using window.shape and some numpy magic and of the relevant opacity as per 
+https://stackoverflow.com/questions/72496870/window-shape-change-not-working-properly-in-kivy
+then to communicate with each other I would use shared dictionaries to pass whatever data is required, but keep each widget as modular as possible.
+
+however, a more critical issue is that u asked for two things:
+>transparent in OBS
+>opaque on monitor
+
+This i don't think is possible (software wise), even with using js/webtech. This is because things are only rendered in one opacity as far as i know. if ur transparent in OBS, ur gonna be transparent in the display and vice versa.
+
+hardware wise, there is a technique: 
+key + fill:
+https://obsproject.com/forum/threads/window-capture-transparency-no-color-key.11781/post-66060
+however obs does not support that, but vmix might
+https://www.reddit.com/r/VIDEOENGINEERING/comments/10yem9v/comment/j7y23de/?utm_source=share&utm_medium=web2x&context=3
+
+related stuff to read:
+stream avatars does smth similar to what u want
+https://docs.streamavatars.com/stream-avatars/how-to-overlay/obs
+clone so u can look at some code: https://github.com/haliphax/hxavatars
+
+TL:DR;
+It is possible to replicate the chromium streamelements/chat overlay for OBS, but would be slight hell to do.
+for Kivy, transparency is done in 2 ways, shaped window and transparency as per: https://stackoverflow.com/questions/59223007/how-to-make-transparent-screen-on-desktopapp-in-kivy
+HOWEVER, ur request might be undoable since as far as I know things only have 1 opacity.
+If u still want some obs overlay, it's time to learn some js I guess...
