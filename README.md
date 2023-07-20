@@ -59,7 +59,7 @@ https://stackoverflow.com/questions/39359950/how-do-i-have-multiple-windows-in-k
 
 PLAN:
 
-ur main python file is going to have several kivy windows spawned with multiprocessing, each cropped out using window.shape and some numpy magic and of the relevant opacity as per 
+ur main python file is going to have several kivy windows spawned with multiprocessing, each cropped out using window.shape and some numpy magic to make the shape png  and of the relevant opacity as per 
 https://stackoverflow.com/questions/72496870/window-shape-change-not-working-properly-in-kivy
 
 then to communicate with each other I would use shared dictionaries to pass whatever data is required, but keep each widget as modular as possible.
