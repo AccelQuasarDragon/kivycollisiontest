@@ -54,6 +54,7 @@ I spent ~1 hr checking it out, no joke it is possible to emulate the JS/chromium
 relevant links:
 
 https://stackoverflow.com/questions/31458331/running-multiple-kivy-apps-at-same-time-that-communicate-with-each-other
+
 https://stackoverflow.com/questions/39359950/how-do-i-have-multiple-windows-in-kivy
 
 PLAN:
