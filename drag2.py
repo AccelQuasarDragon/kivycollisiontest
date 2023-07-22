@@ -42,13 +42,14 @@ kv = """
 FileSpace:
     #need to add alpha channel to images btw
     FileBox:
-        id: sportsball"
+        id: sportsball
         opacity: 0.8
         source: "sportspersonMASK3.jpg"
+        # source: "sportspersonMASK3.jpg"
     FileBox:
         id: frigate
-        source: "frigate.jpg"
         opacity: 0.8
+        source: "frigate.jpg"
     FileBox:
         id: bomber
         source: "sportspersonMASK2.jpg"
@@ -57,6 +58,34 @@ FileSpace:
         id: collisionspace
         size: 200, 200
         source: "sportspersonMASK.jpg"
+    FileBox:
+        id: sportsballGRAY
+        opacity: 0.8
+    FileBox:
+        id: sportsballBW
+        opacity: 0.8
+    FileBox:
+        id: sportsballtestarea
+        opacity: 0.8
+    FileBox:
+        id: frigateGRAY
+        opacity: 0.8
+    FileBox:
+        id: frigateBW
+        opacity: 0.8
+    FileBox:
+        id: frigatetestarea
+        opacity: 0.8
+    FileBox:
+        id: bomberGRAY
+        opacity: 0.8
+    FileBox:
+        id: bomberBW
+        opacity: 0.8
+    FileBox:
+        id: bombertestarea
+        opacity: 0.8
+    
 """
 from kivy.clock import Clock
 
@@ -66,7 +95,7 @@ class FileBox(DragBehavior, Image):
     def __init__(self,**kwargs):
         super(FileBox, self).__init__(**kwargs)
         #save the original image so repeated grayconversion doesn't nuke the image out of existence when i observe it
-        Clock.schedule_once(self.originalsave, 2) #0 is too fast, 1 is too fast, 2 works (widget needs to be init before saving an image): https://stackoverflow.com/a/62435605
+        Clock.schedule_once(self.originalsave, 4) #0 is too fast, 1 is too fast, 2 works (widget needs to be init before saving an image): https://stackoverflow.com/a/62435605
     def originalsave(self, *args):
         # # print("og self?", dir(self), self.__dict__)
         # try:
@@ -76,8 +105,14 @@ class FileBox(DragBehavior, Image):
         #     print("blitting died!", e, flush=True)
         #     import traceback
         #     print("full exception", "".join(traceback.format_exception(*sys.exc_info())))
-        self.originalguy = self.export_as_image()
-        self.originalbuf = self.export_as_image()._texture.pixels
+        try:
+            self.originalguy = self.export_as_image()
+            self.originalbuf = self.export_as_image()._texture.pixels
+        except Exception as e:
+            print("redo the test, widgets were not saving images...", e)
+            import traceback
+            print("full exception", "".join(traceback.format_exception(*sys.exc_info())))
+
 
 
 class FileSpace(StackLayout):
@@ -182,6 +217,18 @@ class FileSpace(StackLayout):
                         # https://stackoverflow.com/questions/51285593/converting-an-image-to-grayscale-using-numpy
                         # img_np = image_array
                         img_np = grayConversion(image_array)
+                        # print("widgetvar name??",[x for x in widgetVAR.__dict__ if x != "originalbuf"], dir(widgetVAR), widgetVAR.ids, widgetVAR._proxy_ref)
+                        
+                        #hacky way of getting widget's own id, so a listfilter ON THE PARENT'S IDS
+                        # print("widgetvar id?", [x for x in widgetVAR.parent.ids if widgetVAR == widgetVAR.parent.ids[x]])
+                        #assume the list only returns 1 answer...
+                        widgetIDVAR =[x for x in widgetVAR.parent.ids if widgetVAR == widgetVAR.parent.ids[x]][0]
+                        #getgraycovnersion to be dimension 4 on 3rd axis (hope i didnt mess the matrix columns and rows again), basically make sure it fits in rgba
+                        img_np_blitprep = np.stack((img_np,)*4, axis=-1).astype(np.uint8) 
+                        #now make a texture and blit to correct widget defined by (widgetIDVAR+"GRAY")
+                        newtextureGRAY = Texture.create(size=(img_np_blitprep.shape[1],img_np_blitprep.shape[0]), colorfmt='rgba') 
+                        newtextureGRAY.blit_buffer(img_np_blitprep.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                        self.ids[widgetIDVAR+"GRAY"].texture = newtextureGRAY
                         
                         # img_np = np.stack((img_np,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
                         # print("np shape?", img_np.shape)
@@ -198,13 +245,27 @@ class FileSpace(StackLayout):
                         # https://stackoverflow.com/a/40119878
                         # bw = np.stack((bw,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
                         # print("bw shape after", bw.shape, bw)
+                        
+                        #u already know the ID from above, it's widgetIDVAR
+
+                        #get B&W to be dimension 4 on 3rd axis (basically make sure it fits in rgba)
+                        bw_blitprep = np.stack((bw,)*4, axis=-1).astype(np.uint8) 
+                        #now make a texture and blit to correct widget defined by (widgetIDVAR+"GRAY")
+                        newtextureBW = Texture.create(size=(bw_blitprep.shape[1],bw_blitprep.shape[0]), colorfmt='rgba') 
+                        newtextureBW.blit_buffer(bw_blitprep.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                        self.ids[widgetIDVAR+"BW"].texture = newtextureBW
+
                         return bw
                     
                     def pixelcollider(*args):
                         # print("argssss",args)
+                        #new plan: the question is to display the sequence of GRAY>BLACK&WHITE>FINAL image results to better fine tune the algorithm for objects with dark borders.
+                        #the trick i s to hardcode sportsball>sportsballGARY>sportsballBW>sportsball
+                        #all u need to do is at each step blit to the right id when u make the numpy array but to do that u must pass the widget id manually because i have no idea how to get a widget's own id. I DO, ask the parent using the filter!
                         widget1VAR = args[0]
                         widget2VAR = args[1]
                         widget1VARmask = widgettomask(widget1VAR)
+                        # print("get id from parent using matching", self.ids , [x for x in self.ids if widget1VAR == self.ids[x]])
                         widget2VARmask = widgettomask(widget2VAR)
                         #PLAN:
                         #u know the locations relative to each other
@@ -245,6 +306,15 @@ class FileSpace(StackLayout):
                         #       widget1xoffset+widget1VAR.width,
                         #       widget1yoffset,
                         #       widget1yoffset+widget1VAR.height)
+                        #update canvas to show testarea
+                        #get widget1's id by asking parent
+                        widgetIDVAR =[x for x in widget1VAR.parent.ids if widget1VAR == widget1VAR.parent.ids[x]][0]
+                        #make sure testarea1 fits to rgba 
+                        testarea1_blitprep = np.stack((testarea1,)*4, axis=-1).astype(np.uint8) 
+                        #now make a texture and blit to correct widget defined by (widgetIDVAR+"GRAY")
+                        newtexturetest1 = Texture.create(size=(testarea1_blitprep.shape[1],testarea1_blitprep.shape[0]), colorfmt='rgba') 
+                        newtexturetest1.blit_buffer(testarea1_blitprep.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                        self.ids[widgetIDVAR+"testarea"].texture = newtexturetest1
 
                         #now to update testarea2 with respect to the widget location:
                         #place widget 2 respecting the offsets
@@ -264,6 +334,16 @@ class FileSpace(StackLayout):
                         #       )
                         #reminder y and x are reversed
                         testarea2[widget2yoffset:widget2yoffset+widget2VAR.height,widget2xoffset:widget2xoffset+widget2VAR.width] = widget2VARmask
+
+                        #update canvas to show testarea2
+                        #get widget1's id by asking parent
+                        widget2IDVAR =[x for x in widget2VAR.parent.ids if widget2VAR == widget2VAR.parent.ids[x]][0]
+                        #make sure testarea2 fits to rgba 
+                        testarea2_blitprep = np.stack((testarea2,)*4, axis=-1).astype(np.uint8) 
+                        #now make a texture and blit to correct widget defined by (widgetIDVAR+"GRAY")
+                        newtexturetest2 = Texture.create(size=(testarea2_blitprep.shape[1],testarea2_blitprep.shape[0]), colorfmt='rgba') 
+                        newtexturetest2.blit_buffer(testarea2_blitprep.tobytes(), colorfmt="rgba", bufferfmt='ubyte')
+                        self.ids[widget2IDVAR+"testarea"].texture = newtexturetest2
 
                         # #show testarea1 and testarea2:
                         # finaltest = np.add(testarea1, testarea2) #add is if black is the bg
