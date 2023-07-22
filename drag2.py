@@ -44,12 +44,13 @@ FileSpace:
     FileBox:
         id: sportsball
         opacity: 0.8
+        # source: "swim_1.png"
         source: "sportspersonMASK3.jpg"
-        # source: "sportspersonMASK3.jpg"
     FileBox:
         id: frigate
         opacity: 0.8
         source: "frigate.jpg"
+        # source: "enemySwimming_2.png"
     FileBox:
         id: bomber
         source: "sportspersonMASK2.jpg"
@@ -241,6 +242,8 @@ class FileSpace(StackLayout):
                         # print("bw og", bw)
                         bw[bw < 128] = 0    # Black
                         bw[bw >= 128] = 255 # White
+                        # bw[bw < 200] = 0    # Black
+                        # bw[bw >= 200] = 255 # White
                         #back to dim of 4:
                         # https://stackoverflow.com/a/40119878
                         # bw = np.stack((bw,)*4, axis=-1) #just needed to get to rgba format to look at mask in kivy
