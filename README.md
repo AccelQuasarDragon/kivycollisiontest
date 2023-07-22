@@ -1,5 +1,11 @@
 # The important thing
 
+updated july 22 2023 with more textures showing each stage of collisiontest, GRAY>B&W>Testarea1/2
+
+
+https://github.com/AccelQuasarDragon/kivycollisiontest/assets/138998466/a4ad2184-ab13-41d7-bfbf-fb8999fe5588
+
+
 https://github.com/AccelQuasarDragon/kivycollisiontest/assets/138998466/c58d794b-317e-4120-9c78-d9603de44060
 
 TO RUN:
