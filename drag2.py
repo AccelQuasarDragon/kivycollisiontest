@@ -11,13 +11,15 @@ from kivy.lang.builder import Builder
 from kivy.uix.behaviors import DragBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.stacklayout import StackLayout
-from kivy.graphics import Rectangle
+from kivy.graphics import Rectangle, Fbo, ClearColor, ClearBuffers, Scale, Translate
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 import copy
 import numpy as np
 from kivy.graphics.texture import Texture
 import time
+import sys
+import os
 kv = """
 
 <FileBox>:
@@ -46,11 +48,13 @@ FileSpace:
         opacity: 0.8
         # source: "swim_1.png"
         source: "sportspersonMASK3.jpg"
+        maskdata: "swim_1MASK.png"
     FileBox:
         id: frigate
         opacity: 0.8
         source: "frigate.jpg"
         # source: "enemySwimming_2.png"
+        maskdata: "enemySwimming_2MASK.png"
     FileBox:
         id: bomber
         source: "sportspersonMASK2.jpg"
@@ -90,6 +94,18 @@ FileSpace:
 """
 from kivy.clock import Clock
 
+def skipself(*args):
+    #I have no idea how to avoid passing self from within a class... this is because Image only takes 1 input, but Image(texture) is actually Image(self, texture) if called within a class
+    newlocation = os.path.join(os.path.dirname(__file__), args[0])
+    print("wtf args", *args, args[0], newlocation)
+    # Ans = Image(args[0])
+    # Ans = Image(newlocation)
+    # Ans = Image(source =  os.path.join(os.path.dirname(__file__), args[0]))
+    Ans = Image(source = args[0])
+    print("what does image have", dir(Ans), Ans.__dict__)
+    #image is still a widget and has .export_as_image()
+    return Ans.export_as_image()
+
 # class FileBox(DragBehavior, BoxLayout):
 class FileBox(DragBehavior, Image):
 
@@ -107,8 +123,19 @@ class FileBox(DragBehavior, Image):
         #     import traceback
         #     print("full exception", "".join(traceback.format_exception(*sys.exc_info())))
         try:
-            self.originalguy = self.export_as_image()
-            self.originalbuf = self.export_as_image()._texture.pixels
+            # print("attrs?", hasattr(self, "source"), self.source)
+            # print(sys.executable) #on vscode this points to python.exe, not correct. u gotta check for MEIPASS before using this
+            #if u specified a mask and self.source is NOT NONE, save that mask instead
+            if hasattr(self, "maskdata") and self.maskdata != None:
+                #set the OS.GETCWD for cross platform support:
+                os.chdir(os.path.dirname(__file__))
+                print("check mask source", self.maskdata)
+               
+                #I have no idea how to avoid passing self from within a class... this is because Image only takes 1 input, but Image(texture) is actually Image(self, texture) if called within a class
+                self.originalguy = skipself(self.maskdata)
+            else:
+                self.originalguy = self.export_as_image()
+                self.originalbuf = self.export_as_image()._texture.pixels
         except Exception as e:
             print("redo the test, widgets were not saving images...", e)
             import traceback
