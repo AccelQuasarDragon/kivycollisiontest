@@ -24,6 +24,10 @@ TODO:
     test it out on a non-mask image,grayConversion is on so it should work on any kivy widget... > WORKS
     bugs: it's just messed up, only works between the first and 2nd widget
 
+# How to use masking system: 
+
+All u need to do is add `maskdata:` to the FileBox Object. when I save the mask in originalsave, I check the attribute of maskdata. If it exists I use the mask, if not I generate a mask using the widget image>grayscale>B&W pipeline I already have.
+
 # explanation:
 
 
