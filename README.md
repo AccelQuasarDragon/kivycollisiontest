@@ -1,5 +1,7 @@
 # The important thing
 
+updated july 23 2023 with a masking system
+
 updated july 22 2023 with more textures showing each stage of collisiontest, GRAY>B&W>Testarea1/2
 
 
