@@ -2,6 +2,10 @@
 
 updated july 23 2023 with a masking system
 
+
+https://github.com/AccelQuasarDragon/kivycollisiontest/assets/138998466/e6859836-fb0a-4797-a92d-c512369ca6bb
+
+
 updated july 22 2023 with more textures showing each stage of collisiontest, GRAY>B&W>Testarea1/2
 
 
