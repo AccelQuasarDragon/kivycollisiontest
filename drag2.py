@@ -20,6 +20,7 @@ from kivy.graphics.texture import Texture
 import time
 import sys
 import os
+from kivy.clock import Clock
 kv = """
 
 <FileBox>:
@@ -92,7 +93,7 @@ FileSpace:
         opacity: 0.8
     
 """
-from kivy.clock import Clock
+
 
 def skipself(*args):
     #I have no idea how to avoid passing self from within a class... this is because Image only takes 1 input, but Image(texture) is actually Image(self, texture) if called within a class

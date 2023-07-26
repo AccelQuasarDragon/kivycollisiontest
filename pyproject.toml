@@ -12,6 +12,7 @@ opencv-python = "^4.8.0.74"
 numpy = "^1.25.1"
 pillow = "^10.0.0"
 pygame = "^2.5.0"
+mediapipe = "^0.10.2"
 
 
 [build-system]
