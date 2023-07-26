@@ -46,7 +46,8 @@ class CamApp(App):
         layout = BoxLayout()
         layout.add_widget(self.img1)
         # self.capture = cv2.VideoCapture(0)
-        self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL_265.mp4")
+        # self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL_265.mp4")
+        self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL.webm")
         Clock.schedule_interval(self.on_frame_data, 1.0/60.0)
         Clock.schedule_once(self.on_start, 0)
         self.index = 0
