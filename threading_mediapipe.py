@@ -13,6 +13,7 @@ from mediapipe.framework.formats import landmark_pb2
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import numpy as np
+import time
 
 def draw_landmarks_on_image(annotated_image, detection_result):
     pose_landmarks_list = detection_result.pose_landmarks
@@ -44,7 +45,8 @@ class CamApp(App):
         self.img1=Image()
         layout = BoxLayout()
         layout.add_widget(self.img1)
-        self.capture = cv2.VideoCapture(0)
+        # self.capture = cv2.VideoCapture(0)
+        self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL_265.mp4")
         Clock.schedule_interval(self.on_frame_data, 1.0/60.0)
         Clock.schedule_once(self.on_start, 0)
         self.index = 0
@@ -60,6 +62,7 @@ class CamApp(App):
 
     def thread_function(self):
         while not self.canceling_thread:
+            timeog = time.time()
             ret, testframe = self.capture.read()
             self.index += 1
             if ret: 
@@ -70,6 +73,7 @@ class CamApp(App):
                 image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
                 results = landmarker.detect_for_video(image, self.index) 
                 self.frame_data = draw_landmarks_on_image(testframe, results)
+            print("totaltime", time.time() - timeog)
         self.thread = None
 
     def on_frame_data(self, *_):
