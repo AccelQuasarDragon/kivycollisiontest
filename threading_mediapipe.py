@@ -30,6 +30,7 @@ def draw_landmarks_on_image(annotated_image, detection_result):
     return annotated_image
    
 with open("pose_landmarker_lite.task", 'rb') as f:
+# with open("pose_landmarker_full.task", 'rb') as f:
     modelbytes = f.read()
     base_options = python.BaseOptions(model_asset_buffer=modelbytes)
     VisionRunningMode = mp.tasks.vision.RunningMode
@@ -47,7 +48,7 @@ class CamApp(App):
         layout.add_widget(self.img1)
         # self.capture = cv2.VideoCapture(0)
         # self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL_265.mp4")
-        self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL.webm")
+        # self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL.webm")
         Clock.schedule_interval(self.on_frame_data, 1.0/60.0)
         Clock.schedule_once(self.on_start, 0)
         self.index = 0
@@ -58,6 +59,7 @@ class CamApp(App):
         return layout
 
     def on_start(self, *args):
+        self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL.webm")
         self.thread = threading.Thread(target=self.thread_function)
         self.thread.start()
 
