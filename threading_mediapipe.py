@@ -14,6 +14,7 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import numpy as np
 import time
+from collections import deque
 
 def draw_landmarks_on_image(annotated_image, detection_result):
     pose_landmarks_list = detection_result.pose_landmarks
@@ -46,6 +47,7 @@ class CamApp(App):
         self.img1=Image()
         layout = BoxLayout()
         layout.add_widget(self.img1)
+        self.readingdeque = deque(maxlen=30)
         # self.capture = cv2.VideoCapture(0)
         # self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL_265.mp4")
         # self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL.webm")
@@ -76,15 +78,23 @@ class CamApp(App):
                 image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
                 results = landmarker.detect_for_video(image, self.index) 
                 self.frame_data = draw_landmarks_on_image(testframe, results)
-            print("totaltime", time.time() - timeog)
+            print("totaltime_MEDIAPIPE", time.time() - timeog, "starttime:", timeog, "endtime:", time.time())
         self.thread = None
 
     def on_frame_data(self, *_):
+        timeOG1 = time.time()
         if isinstance(self.frame_data,np.ndarray):
+            timeA = time.time()
             buf1 = cv2.flip(self.frame_data, 0)
+            timeB = time.time()
             buf = buf1.tobytes()
+            timeC = time.time()
             texture1 = Texture.create(size=(self.width, self.height), colorfmt='bgr') 
+            timeD = time.time()
             texture1.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+            timeE = time.time()
             self.img1.texture = texture1
+            timeF = time.time()
+            print("totaltime_FRAMEDATA", time.time() - timeOG1, "starttime:", timeOG1, "endtime:", time.time(), "A-OG1",timeA - timeOG1, "B-A", timeB - timeA, "C-B", timeC-timeB, "D-C",timeD-timeC, "E-D", timeE-timeD, "F-E", timeF-timeE)
 if __name__ == '__main__':
     CamApp().run()
