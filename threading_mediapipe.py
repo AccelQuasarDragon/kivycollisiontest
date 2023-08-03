@@ -30,8 +30,8 @@ def draw_landmarks_on_image(annotated_image, detection_result):
             solutions.drawing_styles.get_default_pose_landmarks_style())
     return annotated_image
    
-# with open("pose_landmarker_lite.task", 'rb') as f:
-with open("pose_landmarker_full.task", 'rb') as f:
+with open("pose_landmarker_lite.task", 'rb') as f:
+# with open("pose_landmarker_full.task", 'rb') as f:
     modelbytes = f.read()
     base_options = python.BaseOptions(model_asset_buffer=modelbytes)
     VisionRunningMode = mp.tasks.vision.RunningMode
