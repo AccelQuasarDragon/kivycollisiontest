@@ -62,7 +62,12 @@ class CamApp(App):
 
     def on_start(self, *args):
         self.capture = cv2.VideoCapture("Elephants Dream charstart2FULL.webm")
+        # self.capture2 = cv2.VideoCapture("Elephants Dream charstart2FULL.webm")
         self.thread = threading.Thread(target=self.thread_function)
+        self.thread.start()
+        import time
+        time.sleep(1)
+        self.thread = threading.Thread(target=self.thread_functionNULL)
         self.thread.start()
 
     def thread_function(self):
@@ -80,6 +85,24 @@ class CamApp(App):
                 self.frame_data = draw_landmarks_on_image(testframe, results)
             print("totaltime_MEDIAPIPE", time.time() - timeog, "starttime:", timeog, "endtime:", time.time())
         self.thread = None
+
+    def thread_functionNULL(self):
+        while not self.canceling_thread:
+            # timeog = time.time()
+            # ret, testframe = self.capture.read()
+            self.index += 1
+            if hasattr(self, "framedata"): 
+                global landmarker
+                testframe = self.framedata
+                image = testframe
+                self.height = testframe.shape[0]
+                self.width = testframe.shape[1]
+                image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+                results = landmarker.detect_for_video(image, self.index) 
+                draw_landmarks_on_image(testframe, results)
+            # print("totaltime_MEDIAPIPE", time.time() - timeog, "starttime:", timeog, "endtime:", time.time())
+        self.thread = None
+
 
     def on_frame_data(self, *_):
         timeOG1 = time.time()

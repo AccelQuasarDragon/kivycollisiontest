@@ -74,10 +74,9 @@ class CamApp(App):
 
         self.thread = threading.Thread(target=self.thread_function)
         self.thread.start()
-        # time.sleep(1)
-        # self.thread2 = threading.Thread(target=self.thread_function2)
-        # self.thread2.start()
-
+        time.sleep(1)
+        self.thread2 = threading.Thread(target=self.thread_function2)
+        self.thread2.start()
     def reading_thread(self):
         while True:
             if len(self.readingdequeE) < 30 and len(self.readingdequeO) < 30:
@@ -93,6 +92,23 @@ class CamApp(App):
                     print("readodd")
                     self.readindex += 1
             time.sleep(0.01)
+
+    def thread_functionOG(self):
+        while not self.canceling_thread:
+            timeog = time.time()
+            ret, testframe = self.capture.read()
+            self.index += 1
+            if ret: 
+                global landmarker
+                image = testframe
+                self.height = testframe.shape[0]
+                self.width = testframe.shape[1]
+                image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+                results = landmarker.detect_for_video(image, self.index) 
+                self.frame_data = draw_landmarks_on_image(testframe, results)
+            print("totaltime_MEDIAPIPE", time.time() - timeog, "starttime:", timeog, "endtime:", time.time())
+        self.thread = None
+
 
     def thread_function(self): #read even frames and start
         #set the starttime
