@@ -21,6 +21,7 @@ import time
 import sys
 import os
 from kivy.clock import Clock
+import cv2
 kv = """
 
 <FileBox>:
@@ -238,6 +239,8 @@ class FileSpace(StackLayout):
                         # bytesformat = imageguy._texture.pixels
                         # print(type(bytesformat), imageguy.width, imageguy.height,imageguy.__dict__, dir(imageguy)) #, imageguy.colorfmt > confirmed rgba for sportsperson
                         image_array = np.frombuffer(bytesformat, np.uint8).copy().reshape(imageguy.width, imageguy.height, 4) #u need to know ur image format. this is assuming rgba/bgra. if u have no alpha channel then it's just rgb/bgr and so pick 3
+                        #u gotta resize the image to the widget size, there is proabably a way to do this w.o opencv using only numpy, but alas:
+                        image_array = cv2.resize(image_array, dsize=(widgetVAR.width, widgetVAR.height))
                         # print("og shape", image_array.shape)
                         #FOR SOME REASON IMAGEDATA FLIPS VERTICAL TRUE
                         image_array = np.flip(image_array, 0)
