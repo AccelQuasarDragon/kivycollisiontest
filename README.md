@@ -17,10 +17,12 @@ https://github.com/AccelQuasarDragon/kivycollisiontest/assets/138998466/c58d794b
 TO RUN:
 
 with poetry:
-
+```
 poetry update (to download stuff)
 poetry shell (to get into the shell)
-python drag2.py to run the example, the other examples were checking other stuff
+python drag2.py to run the example, 
+```
+the other examples were checking other stuff
 
 with pip:
 
