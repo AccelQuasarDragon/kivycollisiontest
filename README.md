@@ -121,3 +121,19 @@ HOWEVER, ur request might be undoable since as far as I know things
 only have 1 opacity.
 
 If u still want some obs overlay, it's time to learn some js I guess...
+
+# Grabbing frames from VLC and displaying in Kivy
+
+vlcintegration/vlckivy.py shows that it is possible to grab frames from vlc to display on kivy. all u need to do is install the imports into a venv (ideally) and then rename self.video_path = '30 fps counter.webm' to whatever ur file is, also make sure Clock.schedule_interval(self.update, 1.0/30.0) matches ur framerate 
+
+https://github.com/AccelQuasarDragon/kivycollisiontest/assets/138998466/9facf3d9-771e-490f-9e17-9a4c482eab3d
+
+notes for future: uh examples set format to "RV32" with video_set_format, u can probably cut out PIL if RGB/RGBA is possible, OR do BGR/BGRA to also cut out opencv so the framebufs are correct
+another thing is globals are lame, cut that out
+#to optimize more, use reload_observer as per: https://stackoverflow.com/questions/51546327/in-kivy-is-there-a-way-to-dynamically-change-the-shape-of-a-texture
+#since this is manual stuff (manually setting a buffer in c) ur gonna have to mess with VIDEOHEIGHT or alternative steal it from vlc when it loads a video
+#there is another optimization where U use pillow, u can skip pillow and directly go to a numpy array but idk what the bufferformat is from VLC, pillow does tho
+#remember to match the framerate
+ https://stackoverflow.com/questions/37749378/integrate-opencv-webcam-into-a-kivy-user-interface (edited)
+
+
