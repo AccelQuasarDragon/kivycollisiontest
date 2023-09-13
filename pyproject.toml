@@ -13,6 +13,7 @@ numpy = "^1.25.1"
 pillow = "^10.0.0"
 pygame = "^2.5.0"
 mediapipe = "^0.10.2"
+python-vlc = "^3.0.18122"
 
 
 [build-system]
